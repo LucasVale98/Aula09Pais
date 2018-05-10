@@ -1,5 +1,6 @@
 package service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import dao.PaisDAO;
@@ -14,10 +15,10 @@ public class PaisesService {
 	}
 	
 	public ArrayList<Pais> listarPaises(){
-		return dao.listar(null);
+		return dao.listarPais();
 	}
 	
-	public ArrayList<Pais> listarPais(String chave){
+	public ArrayList<Pais> listarPais(String chave) throws IOException{
 		return dao.listar(chave);
 	}
 

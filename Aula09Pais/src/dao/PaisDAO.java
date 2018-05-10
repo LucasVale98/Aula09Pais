@@ -1,20 +1,18 @@
 package dao;
 
+import java.io.IOException;
 import java.sql.Connection;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import dao.ConnectionFactory;
 import model.Pais;
 
 public class PaisDAO {
 	public int criar(Pais pais) {
-		String sqlInsert = "INSERT INTO pais(nome, população, area) VALUES (?, ?, ?)";
+		String sqlInsert = "INSERT INTO pais(nome, populacao, area) VALUES (?, ?, ?)";
 		
 		try (Connection conn = ConnectionFactory.connPais(); 
 			PreparedStatement stm = conn.prepareStatement(sqlInsert);) {
@@ -40,7 +38,7 @@ public class PaisDAO {
 	}
 	
 	public void atualizar(Pais pais) {
-		String sqlUpdate = "UPDATE pais SET nome=?, população=?, area=? WHERE id=?";
+		String sqlUpdate = "UPDATE pais SET nome=?, populacao=?, area=? WHERE id=?";
 		try (Connection conn = ConnectionFactory.connPais();
 				PreparedStatement stm = conn.prepareStatement(sqlUpdate);) {
 			stm.setString(1, pais.getNome());
@@ -68,7 +66,7 @@ public class PaisDAO {
 	public Pais carregar(int id) {
 		Pais pais = new Pais();
 		pais.setId(id);
-		String sqlSelect = "SELECT nome, população, area FROM pais WHERE pais.id = ?";
+		String sqlSelect = "SELECT nome, populacao, area FROM pais WHERE pais.id = ?";
 		
 		try (Connection conn = ConnectionFactory.connPais();
 				PreparedStatement stm = conn.prepareStatement(sqlSelect);) {
@@ -76,7 +74,7 @@ public class PaisDAO {
 			try (ResultSet rs = stm.executeQuery();) {
 				if (rs.next()) {
 					pais.setNome(rs.getString("nome"));
-					pais.setPopulacao(rs.getLong("população"));
+					pais.setPopulacao(rs.getLong("populacao"));
 					pais.setArea(rs.getDouble("area"));
 				} else {
 					pais.setId(-1);
@@ -95,28 +93,35 @@ public class PaisDAO {
 	
 	
 	
-	public ArrayList<Pais> listar(String chave) {
+	public ArrayList<Pais> listar(String chave) throws IOException {
 		List <Pais> paises = new ArrayList <>();
-		String sql = "SELECT * FROM pais";
-		try (Connection conn = ConnectionFactory.connPais();
-				PreparedStatement ps = conn.prepareStatement(sql);
-				ResultSet rs = ps.executeQuery()){
+		String sql = "SELECT id, nome, populacao, area  FROM pais where upper(nome) like ?";
+				
+		try (Connection conn = ConnectionFactory.connPais();){
+				try (PreparedStatement stm = conn.prepareStatement(sql);) {
+					stm.setString(1, "%" + chave.toUpperCase() + "%");
+				try (ResultSet rs = stm.executeQuery();) {
 				while (rs.next()) {
-					
-					String nome = rs.getString("nome");
-					long populacao = rs.getLong("população");
-					double area = rs.getDouble("area");
-					
 					Pais pes = new Pais ();
-					pes.setNome(nome);
-					pes.setPopulacao(populacao);
-					pes.setArea(area);
+					pes.setId(rs.getInt("id"));
+					pes.setNome(rs.getString("nome"));
+					pes.setPopulacao(rs.getLong("populacao"));
+					pes.setArea(rs.getDouble("area"));
 					paises.add(pes);
 				}
-		}
-		catch (Exception e) {
+		}catch (SQLException e) {
 			e.printStackTrace();
+			throw new IOException();
 		}
+	} catch (SQLException e1) {
+		e1.printStackTrace();
+		throw new IOException();
+	}
+} catch (SQLException e2) {
+	e2.printStackTrace();
+	throw new IOException();
+}
+
 		return (ArrayList<Pais>) paises;
 	}
 	
@@ -133,7 +138,7 @@ public class PaisDAO {
 					pais.setId(rs.getInt("id"));
 					pais.setNome(rs.getString("nome"));
 					pais.setPopulacao(rs.getLong("populacao"));
-					pais.setArea(rs.getShort("area"));
+					pais.setArea(rs.getDouble("area"));
 					lista.add(pais);
 				}
 			} catch (SQLException e) {

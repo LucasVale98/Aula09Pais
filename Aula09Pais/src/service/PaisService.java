@@ -25,8 +25,5 @@ PaisDAO dao = new PaisDAO();
 	public int menor(Pais[] pais) {
 		return dao.menor(pais);
 	}
-	public List<Pais> listar(){
-		return dao.listar(null);
-	}
 	
 }
